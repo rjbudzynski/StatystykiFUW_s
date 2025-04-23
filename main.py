@@ -2,7 +2,7 @@
 
 import marimo
 
-__generated_with = "0.13.0"
+__generated_with = "0.13.1"
 app = marimo.App(width="medium")
 
 
@@ -217,21 +217,31 @@ def _(mo):
 def _(daty, mo, studenci):
     liczby_studentow = mo.sql(
         f"""
-        select 
+        select
             s.PRG_KOD,
             count(distinct s.OS_ID) as ILE,
-            count(distinct case when s.PLEC='M' then s.OS_ID else NULL end) as ILE_M,
-            count(distinct case when s.PLEC='K' then s.OS_ID else NULL end) as ILE_K,
+            count(
+                distinct case
+                    when s.PLEC = 'M' then s.OS_ID
+                    else NULL
+                end
+            ) as ILE_M,
+            count(
+                distinct case
+                    when s.PLEC = 'K' then s.OS_ID
+                    else NULL
+                end
+            ) as ILE_K,
             d.DATA
-        from 
-            studenci s join daty d 
-                on d."DATA" between s."DATA_PRZYJECIA" 
-                    and s."PLAN_DATA_UKON"
-        group by 
-            s."PRG_KOD", d."DATA"
-        order by 
-            d."DATA", s."PRG_KOD"
-        ;
+        from
+            studenci s
+            join daty d on d."DATA" between s."DATA_PRZYJECIA" and s."PLAN_DATA_UKON"
+        group by
+            s."PRG_KOD",
+            d."DATA"
+        order by
+            d."DATA",
+            s."PRG_KOD";
         """
     )
     return (liczby_studentow,)
@@ -320,8 +330,8 @@ def _(liczby_studentow, mo, plt):
     _df = mo.sql(f"""
     select 
         DATA,
-        sum(ILE_K) as ILE_K,
-        sum(ILE_M) as ILE_M
+        sum(ILE_K)::int as ILE_K,
+        sum(ILE_M)::int as ILE_M
     from 
         liczby_studentow
     where 
@@ -341,6 +351,67 @@ def _(liczby_studentow, mo, plt):
     _a.legend()
     mo.center(_f)
     # _df
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        r"""
+        ### Zrób wykresy procentu studentek w funkcji czasu:
+        * wśród osób studiujących na programach zarządzanych przez FUW łącznie
+        * wśród osób doktoranckich fizyki i astronomii
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    procent_k = mo.sql(
+        f"""
+        with
+            T as (
+                select
+                    DATA,
+                    case
+                        when PRG_KOD similar to '(DD|SD).*' then 'DOKTORANCI'
+                        else 'STUDENCI'
+                    end as TYP,
+                    sum(ILE_K) / sum(ILE) * 100 as "PROCENT KOBIET"
+                from
+                    liczby_studentow s
+                where
+                    exists (
+                        select
+                            1
+                        from
+                            programy p
+                        where
+                            p.PRG_KOD = s.PRG_KOD
+                            and p.ADM
+                    )
+                group by
+                    DATA,
+                    TYP
+                -- order by
+                --     DATA
+            )
+        pivot T on TYP using first("PROCENT KOBIET") order by DATA;
+        """
+    )
+    return (procent_k,)
+
+
+@app.cell
+def _(mo, plt, procent_k):
+    _f, _a = plt.subplots(figsize=(12, 7))
+    _a.plot("DATA", "STUDENCI", data=procent_k, label="Studentki")
+    _a.plot("DATA", "DOKTORANCI", data=procent_k, label="Doktorantki")
+    _a.set_title("Procent studentek (programy FUW) i doktorantek w czasie")
+    _a.legend()
+    _a.set_ylim(0, 100)
+    mo.center(_f)
     return
 
 
