@@ -112,7 +112,7 @@ def _():
 
     Tutaj ukryłem też kod zapewniający dostępność plików z danymi, na jakich będziemy operować.
     """)
-    return mo, os
+    return mo, os, plt
 
 
 @app.cell(hide_code=True)
@@ -209,6 +209,36 @@ def _(daty, mo, os, programy, studenci):
 
 @app.cell(hide_code=True)
 def _(mo):
+    mo.md(r"""### Tabela pomocnicza, liczba studentów w czasie według programu i płci""")
+    return
+
+
+@app.cell
+def _(daty, mo, studenci):
+    liczby_studentow = mo.sql(
+        f"""
+        select 
+            s.PRG_KOD,
+            count(distinct s.OS_ID) as ILE,
+            count(distinct case when s.PLEC='M' then s.OS_ID else NULL end) as ILE_M,
+            count(distinct case when s.PLEC='K' then s.OS_ID else NULL end) as ILE_K,
+            d.DATA
+        from 
+            studenci s join daty d 
+                on d."DATA" between s."DATA_PRZYJECIA" 
+                    and s."PLAN_DATA_UKON"
+        group by 
+            s."PRG_KOD", d."DATA"
+        order by 
+            d."DATA", s."PRG_KOD"
+        ;
+        """
+    )
+    return (liczby_studentow,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
     mo.md(r"""## Surowe dane""")
     return
 
@@ -245,6 +275,72 @@ def _(mo, programy, studenci):
         Liczby w kolumnie `ILE OSÓB` oznaczają, ile różnych osób studiowało na danym programie kiedykolwiek w ramach rozważanego okresu (od 2000-01-01 do dziś).
         """
     ), programy_ile_os])
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        r"""
+        ### Przedstaw te dane na wykresie słupkowym
+
+        Odróżnij programy zarządzane przez FUW od pozostałych. Użyj różnych kolorów dla tych dwóch grup. Dodaj legendę, tytuł i opisy osi. Użyj odpowiedniego rozmiaru wykresu, aby był czytelny.
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        r"""
+        ### Stwórz tabelę z liczbami studentów aktualnie studiujących
+
+        Z podziałem na programy.
+        Przedstaw te dane na analogicznym wykresie słupkowym.
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        r"""
+        ### Zrób wykres liniowy przedstawiający liczbę studentów i studentek w czasie
+
+        Dla wszystkich programów fizyki (kody zawierają `FZ` i `NKF`), ale bez doktorantów.
+        """
+    )
+    return
+
+
+@app.cell
+def _(liczby_studentow, mo, plt):
+    _df = mo.sql(f"""
+    select 
+        DATA,
+        sum(ILE_K) as ILE_K,
+        sum(ILE_M) as ILE_M
+    from 
+        liczby_studentow
+    where 
+        (PRG_KOD like '%FZ%' or PRG_KOD like '%NKF%')
+        and PRG_KOD not like 'DD%'
+        and PRG_KOD not like 'SD%'
+        and PRG_KOD not like 'SP%'
+    group by
+        DATA
+    order by 
+        DATA
+    """)
+    _f, _a = plt.subplots(figsize=(12, 7))
+    _a.plot("DATA", "ILE_K", data=_df, label="Kobiety")
+    _a.plot("DATA", "ILE_M", data=_df, label="Mężczyźni")
+    _a.set_title("Liczba studentów i studentek fizyki w czasie")
+    _a.legend()
+    mo.center(_f)
+    # _df
     return
 
 
