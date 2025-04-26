@@ -209,6 +209,23 @@ def _(daty, mo, os, programy, studenci):
 
 @app.cell(hide_code=True)
 def _(mo):
+    mo.md(r"""## Surowe dane""")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo, studenci):
+    _df = mo.sql(
+        f"""
+        SELECT * FROM studenci;
+        """
+    )
+    mo.vstack([mo.md("### Tabela studentów"), _df])
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
     mo.md(r"""### Tabela pomocnicza, liczba studentów w czasie według programu i płci""")
     return
 
@@ -245,23 +262,6 @@ def _(daty, mo, studenci):
         """
     )
     return (liczby_studentow,)
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""## Surowe dane""")
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo, studenci):
-    _df = mo.sql(
-        f"""
-        SELECT * FROM studenci;
-        """
-    )
-    mo.vstack([mo.md("### Tabela studentów"), _df])
-    return
 
 
 @app.cell(hide_code=True)
@@ -412,6 +412,27 @@ def _(mo, plt, procent_k):
     _a.legend()
     _a.set_ylim(0, 100)
     mo.center(_f)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        r"""
+        ## Wyzwania
+
+        Spróbować wyznaczyć i stworzyć wizualizacje odpowiedzi na niektóre lub wszystkie z poniższych pytań: 
+
+        - Jak zmieniał się w czasie procent kobiet wśród osób studiujących w zależności od kierunku studiów, w postaci uśrednionej po roku akademickim?
+        - Jak zmieniała się rekrutacja z czasem? W zależności od programu, bądź grupy programu (kierunek, tryb studiów)
+        - W przypadku skreślenia/rezygnacji, po jakim czasie to następuje? Jak to zależy od programu/kierunku?
+        - Jak często studenci kończą studia dyplomem, a jak często skreśleniem? Jak to się rozkłada w czasie od rozpoczęcia studiów, jak zależy od programu/kierunku/płci studenta?
+        - Jak to zależy od programu studiów, płci?
+        - Jak się to zmieniało w czasie, zależnie od roku rozpoczęcia studiów?
+        - Ile mija czasu między wstąpieniem studenta na studia po raz pierwszy a ich zakończeniem?
+        - Jakie inne ciekawe pytania można by postawić tym danym?
+        """
+    )
     return
 
 
