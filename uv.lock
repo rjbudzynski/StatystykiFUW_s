@@ -448,15 +448,9 @@ dependencies = [
     { name = "uvicorn" },
     { name = "websockets" },
 ]
-<<<<<<< HEAD
 sdist = { url = "https://files.pythonhosted.org/packages/90/9b/9ca1b4de8e73b90db0c053d384f0b693e5952e82497d4ea280ae76922191/marimo-0.13.10.tar.gz", hash = "sha256:b809d51773740885cf93b3cc65860b197b052fc7696b08fda1201231f30c904a", size = 11969484 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/35/a3/dcb44177c5102aada194ba2064881f7b606d46f4f9f80fee6e842fd78100/marimo-0.13.10-py3-none-any.whl", hash = "sha256:4b462052c9e939ddd2f60d1b279185ee9a209af1c3ec4ba9e8e236caedb4663b", size = 12345484 },
-=======
-sdist = { url = "https://files.pythonhosted.org/packages/29/01/f26fda933290eaeab4a1a3f856221882c311b1ca3f755f6b4df5a4a1bd11/marimo-0.13.2.tar.gz", hash = "sha256:eaee97908b8f90ae53c1f0ddb34f75c9a29c97f683600402372287ba072e44e5", size = 10774675 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/9a/dd/d0127ed66be00796727a929158d8d15cec276364b414f49710dfef4ddbfb/marimo-0.13.2-py3-none-any.whl", hash = "sha256:173a0f4af6661407a43c3af40811c0e16ff41fd9ccae1b15cbfe52b5f3583c50", size = 11139962 },
->>>>>>> refs/remotes/upstream/master
 ]
 
 [[package]]
