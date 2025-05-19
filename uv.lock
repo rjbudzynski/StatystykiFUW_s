@@ -428,11 +428,7 @@ wheels = [
 
 [[package]]
 name = "marimo"
-<<<<<<< HEAD
 version = "0.13.10"
-=======
-version = "0.13.2"
->>>>>>> refs/remotes/upstream/master
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
