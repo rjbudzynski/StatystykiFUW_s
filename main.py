@@ -1,8 +1,6 @@
-
-
 import marimo
 
-__generated_with = "0.13.1"
+__generated_with = "0.13.10"
 app = marimo.App(width="medium")
 
 
@@ -10,17 +8,17 @@ app = marimo.App(width="medium")
 def _(mo):
     mo.md(
         r"""
-        # Przykład analizy danych: liczebność studentów fizyki (i&nbsp;pokrewnych) UW w czasie
+    # Przykład analizy danych: liczebność studentów fizyki (i&nbsp;pokrewnych) UW w czasie
 
-        ## Narzędzia:
-        - <a href=//docs.python.org target=_blank>Python</a> (oczywiście...)
-        - <a href=//marimo.io target=_blank>Marimo</a> - nowa generacja notebooków dla Pythona
-        - <a href=//duckdb.org target=_blank>DuckDB</a> - silnik SQL do celów analitycznych
-        - <a href=//pola.rs target=_blank>Polars</a> - jak Pandas, tylko lepsze 😀
-        - <a href=//matplotlib.org target=_blank>Matplotlib</a> - nie jest ideałem, ale wszyscy znają
+    ## Narzędzia:
+    - <a href=//docs.python.org target=_blank>Python</a> (oczywiście...)
+    - <a href=//marimo.io target=_blank>Marimo</a> - nowa generacja notebooków dla Pythona
+    - <a href=//duckdb.org target=_blank>DuckDB</a> - silnik SQL do celów analitycznych
+    - <a href=//pola.rs target=_blank>Polars</a> - jak Pandas, tylko lepsze 😀
+    - <a href=//matplotlib.org target=_blank>Matplotlib</a> - nie jest ideałem, ale wszyscy znają
 
-        <div style="text-align:right;">&copy; 2025 RJ Budzyński</div>
-        """
+    <div style="text-align:right;">&copy; 2025 RJ Budzyński</div>
+    """
     )
     return
 
@@ -29,27 +27,27 @@ def _(mo):
 def _(mo):
     mo.md(
         r"""
-        ### Jak najkrócej o SQL
+    ### Jak najkrócej o SQL
 
-        - SQL operuje na danych tabelarycznych: nazwane kolumny o określonym typie danych
-        - zawiera polecenia wstawiania danych, ich modyfikacji, kwerendy, ...
-        - nas interesują kwerendy
+    - SQL operuje na danych tabelarycznych: nazwane kolumny o określonym typie danych
+    - zawiera polecenia wstawiania danych, ich modyfikacji, kwerendy, ...
+    - nas interesują kwerendy
 
-        Ogólna struktura kwerendy (zapytania):
+    Ogólna struktura kwerendy (zapytania):
 
-        ```sql
-        SELECT select_expressions ...
-        FROM join_expression
-        WHERE conditions
-        GROUP BY group_keys
-        ORDER BY order_keys
-        ;
-        ```
+    ```sql
+    SELECT select_expressions ...
+    FROM join_expression
+    WHERE conditions
+    GROUP BY group_keys
+    ORDER BY order_keys
+    ;
+    ```
 
-        Spore uproszczenie, ale tyle nam wystarczy.
+    Spore uproszczenie, ale tyle nam wystarczy.
 
-        Prawie wszystkie elementy są opcjonalne, ale _kolejność musi być zachowana_.
-        """
+    Prawie wszystkie elementy są opcjonalne, ale _kolejność musi być zachowana_.
+    """
     )
     return
 
@@ -58,21 +56,21 @@ def _(mo):
 def _(mo):
     mo.md(
         r"""
-        ## Dane
+    ## Dane
 
-        Niestety nie posłużę się danymi o charakterze wprost fizycznym. Związek danych jakie użyję z fizyką polega na tym, że dotyczą studentów Wydziału Fizyki 😀 Ale takie mam akurat pod ręką, i nadają się one do ilustracji pewnych metod.
+    Niestety nie posłużę się danymi o charakterze wprost fizycznym. Związek danych jakie użyję z fizyką polega na tym, że dotyczą studentów Wydziału Fizyki 😀 Ale takie mam akurat pod ręką, i nadają się one do ilustracji pewnych metod.
 
-        Źródłem danych jest USOS, zawierający wszelkie dane (m. in.) o programach studiów, studentach i przebiegu studiów, systematycznie tak mniej więcej od 2000 roku. Oczywiście dalece nie każdy może mieć wprost dostęp do bazy danych USOS, dlatego skorzystam z ekstraktu, zawierającego malutki podzbiór tych danych. Zadbałem o to, by ekstrakt ten był całkowicie wolny od jakichkolwiek danych osobowych podlegających ochronie RODO.
+    Źródłem danych jest USOS, zawierający wszelkie dane (m. in.) o programach studiów, studentach i przebiegu studiów, systematycznie tak mniej więcej od 2000 roku. Oczywiście dalece nie każdy może mieć wprost dostęp do bazy danych USOS, dlatego skorzystam z ekstraktu, zawierającego malutki podzbiór tych danych. Zadbałem o to, by ekstrakt ten był całkowicie wolny od jakichkolwiek danych osobowych podlegających ochronie RODO.
 
-        W skrócie, posłużymy się dwiema tabelami:
+    W skrócie, posłużymy się dwiema tabelami:
 
-        - `programy`, opisującą programy studiów w których prowadzeniu ma udział Wydział Fizyki. Przykładem programu jest `S1-FZ`: studia 1. stopnia z fizyki, ale również np. `SJ-MSMP`: studia jednolite magisterskie w Kolegium MISMaP.
-        - `studenci`, opisującą osoby studiujące na programach. Najważniejsze pozycje w tej tabeli to kod programu, identyfikator osoby (`OS_ID`), płeć, data przyjęcia na program, data ukończenia (planowana lub już zaszła).
+    - `programy`, opisującą programy studiów w których prowadzeniu ma udział Wydział Fizyki. Przykładem programu jest `S1-FZ`: studia 1. stopnia z fizyki, ale również np. `SJ-MSMP`: studia jednolite magisterskie w Kolegium MISMaP.
+    - `studenci`, opisującą osoby studiujące na programach. Najważniejsze pozycje w tej tabeli to kod programu, identyfikator osoby (`OS_ID`), płeć, data przyjęcia na program, data ukończenia (planowana lub już zaszła).
 
-        Tabele te są zapakowane w pliki _parquet_. DuckDB potrafi czytać te pliki i interpretować ich zawartość jako tabele relacyjne. 
+    Tabele te są zapakowane w pliki _parquet_. DuckDB potrafi czytać te pliki i interpretować ich zawartość jako tabele relacyjne. 
 
-        Dlaczego akurat _parquet_? Jest to bardzo wygodny i kompaktowy format danych. Zachowuje on informacje o typach danych; np. daty są datami, a nie napisami do parsowania. Uwzględnia on kompresję danych, zoptymalizowaną dla danych tabelarycznych. Jeżeli mamy do czynienia z tabelą, w której w jednej lub więcej kolumn dane są w jakimś stopniu powtarzalne, tzn. liczba różnych wartości jest istotnie mniejsza niż liczba wierszy, to stopień kompresji potrafi być spektakularny.
-        """
+    Dlaczego akurat _parquet_? Jest to bardzo wygodny i kompaktowy format danych. Zachowuje on informacje o typach danych; np. daty są datami, a nie napisami do parsowania. Uwzględnia on kompresję danych, zoptymalizowaną dla danych tabelarycznych. Jeżeli mamy do czynienia z tabelą, w której w jednej lub więcej kolumn dane są w jakimś stopniu powtarzalne, tzn. liczba różnych wartości jest istotnie mniejsza niż liczba wierszy, to stopień kompresji potrafi być spektakularny.
+    """
     )
     return
 
@@ -119,10 +117,10 @@ def _():
 def _(mo):
     mo.md(
         r"""
-        ## Tworzymy tabele z danych w plikach _parquet_
+    ## Tworzymy tabele z danych w plikach _parquet_
 
-        Dla ułatwienia również pomocniczy widok (wirtualną tabelę) dat w jakich zmieniał się skład studentów. On nie jest konieczny, ale dzięki temu dalsze zapytania będą bardziej zwięzłe.
-        """
+    Dla ułatwienia również pomocniczy widok (wirtualną tabelę) dat w jakich zmieniał się skład studentów. On nie jest konieczny, ale dzięki temu dalsze zapytania będą bardziej zwięzłe.
+    """
     )
     return
 
@@ -285,6 +283,39 @@ def _(mo, programy, studenci):
         Liczby w kolumnie `ILE OSÓB` oznaczają, ile różnych osób studiowało na danym programie kiedykolwiek w ramach rozważanego okresu (od 2000-01-01 do dziś).
         """
     ), programy_ile_os])
+    return (programy_ile_os,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        r"""
+    ### Przedstaw te dane na wykresie słupkowym
+
+    Odróżnij programy zarządzane przez FUW od pozostałych. Użyj różnych kolorów dla tych dwóch grup. Dodaj legendę, tytuł i opisy osi. Użyj odpowiedniego rozmiaru wykresu, aby był czytelny.
+    """
+    )
+    return
+
+
+@app.cell
+def _(plt, programy_ile_os):
+    _f, _a = plt.subplots(figsize=(12, 5))
+    _colors = ["c" if _adm else "m" for _adm in programy_ile_os["ADM"]]
+    _labels = _colors[:]
+    _labels[_colors.index("c")] = "zarządzane przez FUW"
+    _labels[_colors.index("m")] = "współprowadzone przez FUW"
+    _labels = ["_" if len(_x) == 1 else _x for _x in _labels]
+    _a.bar(
+        "PRG_KOD", "ILE OSÓB", data=programy_ile_os, color=_colors, label=_labels
+    )
+    _a.tick_params(axis="x", rotation=90, labelsize=7)
+    _a.set_title("Liczba osób według programu studiów, kiedykolwiek")
+    _a.legend()
+    _a.grid(axis="y")
+    _a.spines["top"].set_visible(False)
+    _a.spines["right"].set_visible(False) 
+    _f
     return
 
 
@@ -292,10 +323,65 @@ def _(mo, programy, studenci):
 def _(mo):
     mo.md(
         r"""
-        ### Przedstaw te dane na wykresie słupkowym
+    ### Stwórz tabelę z liczbami studentów aktualnie studiujących
 
-        Odróżnij programy zarządzane przez FUW od pozostałych. Użyj różnych kolorów dla tych dwóch grup. Dodaj legendę, tytuł i opisy osi. Użyj odpowiedniego rozmiaru wykresu, aby był czytelny.
+    Z podziałem na programy.
+    Przedstaw te dane na analogicznym wykresie słupkowym.
+    """
+    )
+    return
+
+
+@app.cell
+def _(mo, programy, studenci):
+    programy_ile_akt = mo.sql(
+        f"""
+        select
+            programy.*,
+            count(distinct s.OS_ID) as "ILE OSÓB"
+        from
+            programy
+            join studenci s on programy."PRG_KOD" = s.PRG_KOD
+        where
+            current_date between s."DATA_PRZYJECIA" and s."PLAN_DATA_UKON"
+        group by
+            programy."PRG_KOD",
+            programy."OPIS",
+            programy."POCZATEK",
+            programy."KONIEC",
+            programy."ADM"
+        order by
+            "ILE OSÓB" desc;
         """
+    )
+    return (programy_ile_akt,)
+
+
+@app.cell
+def _(mo, plt, programy_ile_akt):
+    _f, _a = plt.subplots()
+    _colors = ["m" if _adm else "c" for _adm in programy_ile_akt["ADM"]]
+    _labels = _colors[:]
+    _labels[_colors.index("m")] = "zarządzane przez FUW"
+    _labels[_colors.index("c")] = "współprowadzone przez FUW"
+    _labels = ["_" if len(_x) == 1 else _x for _x in _labels]
+    _a.bar(
+        "PRG_KOD", "ILE OSÓB", data=programy_ile_akt, color=_colors, label=_labels
+    )
+    _a.legend()
+    _a.tick_params(axis="x", rotation=90, labelsize=7)
+    _a.set_title("Liczba osób na programach studiów, aktualnie")
+    _a.grid(axis="y")
+    _a.spines["top"].set_visible(False)
+    _a.spines["right"].set_visible(False)
+    mo.hstack(
+        [
+            mo.sql(
+                """select PRG_KOD, OPIS from programy_ile_akt order by "ILE OSÓB" desc"""
+            ),
+            _f,
+        ],
+        justify="center",
     )
     return
 
@@ -304,23 +390,10 @@ def _(mo):
 def _(mo):
     mo.md(
         r"""
-        ### Stwórz tabelę z liczbami studentów aktualnie studiujących
+    ### Zrób wykres liniowy przedstawiający liczbę studentów i studentek w czasie
 
-        Z podziałem na programy.
-        Przedstaw te dane na analogicznym wykresie słupkowym.
-        """
-    )
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(
-        r"""
-        ### Zrób wykres liniowy przedstawiający liczbę studentów i studentek w czasie
-
-        Dla wszystkich programów fizyki (kody zawierają `FZ` i `NKF`), ale bez doktorantów.
-        """
+    Dla wszystkich programów fizyki (kody zawierają `FZ` i `NKF`), ale bez doktorantów.
+    """
     )
     return
 
@@ -358,10 +431,10 @@ def _(liczby_studentow, mo, plt):
 def _(mo):
     mo.md(
         r"""
-        ### Zrób wykresy procentu studentek w funkcji czasu:
-        * wśród osób studiujących na programach zarządzanych przez FUW łącznie
-        * wśród osób doktoranckich fizyki i astronomii
-        """
+    ### Zrób wykresy procentu studentek w funkcji czasu:
+    * wśród osób studiujących na programach zarządzanych przez FUW łącznie
+    * wśród osób doktoranckich fizyki i astronomii
+    """
     )
     return
 
@@ -417,21 +490,81 @@ def _(mo, plt, procent_k):
 
 @app.cell(hide_code=True)
 def _(mo):
+    mo.md(r"""## Skreślenia ze studiów w zależności od miesiąca (programy FUW)""")
+    return
+
+
+@app.cell
+def _(mo, programy, studenci):
+    skreslenia_wg_miesiaca = mo.sql(
+        f"""
+        select
+            month(PLAN_DATA_UKON) as "miesiąc",
+            count(distinct OS_ID) as ILE
+        from
+            studenci
+            join programy using (PRG_KOD)
+        where
+            ADM
+            and PRG_KOD not similar to '(DD|SD|SP).*'
+            and PLAN_DATA_UKON < today()
+            and STATUS='SKR'
+        group by
+            "miesiąc"
+        order by
+            "miesiąc";
+        """
+    )
+    return (skreslenia_wg_miesiaca,)
+
+
+@app.cell
+def _(plt, skreslenia_wg_miesiaca):
+    _f, _a = plt.subplots(figsize=(12, 5))
+    _a.bar("miesiąc", "ILE", data=skreslenia_wg_miesiaca)
+    _a.set_xticks(
+        ticks=range(1, 13),
+        labels=(
+            "STY",
+            "LUT",
+            "MAR",
+            "KWI",
+            "MAJ",
+            "CZE",
+            "LIP",
+            "SIE",
+            "WRZ",
+            "PAŹ",
+            "LIS",
+            "GRU",
+        ),
+    )
+    _a.set_title("Skreślenia ze studiów w zależności od miesiąca (programy FUW)")
+    _a.spines["top"].set_visible(False)
+    _a.spines["right"].set_visible(False)
+    _a.grid(lw=0.5, ls="--", axis="y")
+    _f.tight_layout()
+    _f
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
     mo.md(
         r"""
-        ## Wyzwania
+    ## Wyzwania
 
-        Spróbować wyznaczyć i stworzyć wizualizacje odpowiedzi na niektóre lub wszystkie z poniższych pytań: 
+    Spróbować wyznaczyć i stworzyć wizualizacje odpowiedzi na niektóre lub wszystkie z poniższych pytań: 
 
-        - Jak zmieniał się w czasie procent kobiet wśród osób studiujących w zależności od kierunku studiów, w postaci uśrednionej po roku akademickim?
-        - Jak zmieniała się rekrutacja z czasem? W zależności od programu, bądź grupy programu (kierunek, tryb studiów)
-        - W przypadku skreślenia/rezygnacji, po jakim czasie to następuje? Jak to zależy od programu/kierunku?
-        - Jak często studenci kończą studia dyplomem, a jak często skreśleniem? Jak to się rozkłada w czasie od rozpoczęcia studiów, jak zależy od programu/kierunku/płci studenta?
-        - Jak to zależy od programu studiów, płci?
-        - Jak się to zmieniało w czasie, zależnie od roku rozpoczęcia studiów?
-        - Ile mija czasu między wstąpieniem studenta na studia po raz pierwszy a ich zakończeniem?
-        - Jakie inne ciekawe pytania można by postawić tym danym?
-        """
+    - Jak zmieniał się w czasie procent kobiet wśród osób studiujących w zależności od kierunku studiów, w postaci uśrednionej po roku akademickim?
+    - Jak zmieniała się rekrutacja z czasem? W zależności od programu, bądź grupy programu (kierunek, tryb studiów)
+    - W przypadku skreślenia/rezygnacji, po jakim czasie to następuje? Jak to zależy od programu/kierunku?
+    - Jak często studenci kończą studia dyplomem, a jak często skreśleniem? Jak to się rozkłada w czasie od rozpoczęcia studiów, jak zależy od programu/kierunku/płci studenta?
+    - Jak to zależy od programu studiów, płci?
+    - Jak się to zmieniało w czasie, zależnie od roku rozpoczęcia studiów?
+    - Ile mija czasu między wstąpieniem studenta na studia po raz pierwszy a ich zakończeniem?
+    - Jakie inne ciekawe pytania można by postawić tym danym?
+    """
     )
     return
 
